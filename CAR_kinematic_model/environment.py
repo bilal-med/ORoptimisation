@@ -91,22 +91,32 @@ class Environment:
 class Parking1:
     def __init__(self, car_pos):
         self.car_obstacle = self.make_car()
-        self.walls = [[70,i] for i in range(-5,90) ]+\
-                     [[30,i] for i in range(10,105)]+\
-                     [[i,10] for i in range(30,36) ]+\
-                     [[i,90] for i in range(70,76) ] #+ [[i,20] for i in range(-5,50)]
-        self.walls = [0,100]
+        #self.walls = [[70,i] for i in range(-5,90) ]+\
+        #             [[30,i] for i in range(10,105)]+\
+        #             [[i,10] for i in range(30,36) ]+\
+        #             [[i,90] for i in range(70,76) ] #+ [[i,20] for i in range(-5,50)]
+        self.walls =[[8,i] for i in range(-5,6) ]+\
+                     [[20,i] for i in range(-5,6)]
         self.obs = np.array(self.walls)
-        self.cars = {1 : [[35,20]], 2 : [[65,20]], 3 : [[75,20]], 4 : [[95,20]],
-                     5 : [[35,50]], 6 : [[65,50]], 7 : [[75,50]], 8 : [[95,50]],
-                     5 : [[35,42]], 6 : [[65,42]], 7 : [[75,42]], 8 : [[95,42]],
-                     5 : [[35,32]], 6 : [[65,32]], 7 : [[75,32]], 8 : [[95,32]],
-                     9 : [[35,44]], 10: [[65,44]], 11: [[75,44]], 12: [[95,44]],
-                     13: [[35,56]], 14: [[65,56]], 15: [[75,56]], 16: [[95,56]],
-                     17: [[35,68]], 18: [[65,68]], 19: [[75,68]], 20: [[95,68]],
-                     21: [[35,80]], 22: [[65,80]], 23: [[75,80]], 24: [[95,80]]}
+        self.cars = {1 : [2,2], 52 : [2,12], 2 : [2,23], 3 : [2,35], 4 : [2,46], 5 : [2,58], 6 : [2,70], 7 : [2,82],#53 : [[8,15]],54 : [[12,15]], 55 :[[16,15]],56 :[[20,15]],
+
+                     8 : [3,97],9 : [10,97], 
+                     
+                     10: [30,2], 11: [38,2], 
+                     12: [30,23],13: [30,36], 14: [30,49], 15: [30,62],16: [30,75],17: [38,75],
+                    
+                     18: [22,97], 19: [30,97], 20: [38,97],21: [46,97],
+                     22: [38,23],23: [38,36], 24: [38,49], 25: [38,62],
+                     26 : [55,97], 27 : [63,97], 28 : [71,97], 29 : [79,97],
+                     30: [63,23],31: [63,36], 32: [63,49], 33: [63,62],34: [63,75],35: [71,75],
+                     36: [55,2], 37: [63,2], 38: [71,2], 39: [79,2], 40 : [91,2],41 : [98,2],
+                     42: [71,23],43: [71,36], 44: [71,49], 45: [71,62],
+                      46 : [98,20], 47 : [98,31], 48 : [98,42], 49 : [98,53], 50 : [98,64], 51 : [98,75]#,57 : [[45,23]],58 : [[48,23]], 59 :[[52,23]],60 :[[56,23]],53 : [[40,13]],54 : [[44,13]], 55 :[[48,13]],56 :[[52,13]],
+                      #61 : [[86,23]],62 : [[90,23]],63 :[[82,23]],64 :[[56,23]],53 : [[8,86]],54 : [[12,86]], 55 :[[16,86]],56 :[[20,86]],
+                     }
+                     
         self.end = self.cars[car_pos][0]
-        self.cars.pop(car_pos)
+        self.cars.pop(car_pos)    
 
     def generate_obstacles(self):
         for i in self.cars.keys():
@@ -119,3 +129,53 @@ class Parking1:
         car_obstacle_x, car_obstacle_y = np.meshgrid(np.arange(-2,2), np.arange(-4,4))
         car_obstacle = np.dstack([car_obstacle_x, car_obstacle_y]).reshape(-1,2)
         return car_obstacle
+    
+    def Modf(self, L, Y):
+        pos_dispo = {}
+        for element in L :
+            pos_dispo[element] = self.cars.get(element) 
+            self.cars.pop(element) 
+        #print(list(pos_dispo.values()))
+        rayon_min=100
+        
+        if Y[0] < rayon_min:
+           self.cars[53] = [[10,int(Y[0])]] 
+           self.cars[54] = [[14,int(Y[0])]] 
+           self.cars[56] = [[18,int(Y[0])]] 
+           self.cars[83] = [[22,int(Y[0])]]
+        if Y[1] < rayon_min:
+           self.cars[57] = [[45,int(Y[1])]] 
+           self.cars[58] = [[48,int(Y[1])]] 
+           self.cars[59] = [[52,int(Y[1])]] 
+           self.cars[60] = [[56,int(Y[1])]]         
+        if Y[2] < rayon_min:
+           self.cars[61] = [[78,int(Y[2])]] 
+           self.cars[62] = [[82,int(Y[2])]] 
+           self.cars[63] = [[86,int(Y[2])]] 
+           self.cars[64] = [[90,int(Y[2])]]               
+        if Y[3] < rayon_min:
+           self.cars[69] = [[45,100-int(Y[0])]] 
+           self.cars[70] = [[48,100-int(Y[0])]] 
+           self.cars[71] = [[52,100-int(Y[0])]] 
+           self.cars[72] = [[56,100-int(Y[0])]]              
+              
+        if Y[4] < rayon_min:
+           self.cars[65] = [[78,100-int(Y[3])]] 
+           self.cars[66] = [[82,100-int(Y[3])]] 
+           self.cars[67] = [[86,100-int(Y[3])]] 
+           self.cars[68] = [[90,100-int(Y[3])]]                 
+        if Y[5] < rayon_min:
+           self.cars[73] = [[100-int(Y[0]),12]] 
+           self.cars[74] = [[104-int(Y[0]),12]] 
+           self.cars[75] = [[96-int(Y[0]),12]]            
+        if Y[6] < rayon_min:
+           self.cars[76] = [[int(Y[0]),12]] 
+           self.cars[78] = [[int(Y[0])+4,12]] 
+           self.cars[79] = [[int(Y[0])-4,12]]            
+        if Y[7] < rayon_min:
+           self.cars[80] = [[int(Y[0]),86]] 
+           self.cars[81] = [[4+int(Y[0]),86]] 
+           self.cars[82] = [[int(Y[0])-4,86]]            
+         
+                     
+        return list(pos_dispo.values()), self.cars 

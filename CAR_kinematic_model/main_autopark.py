@@ -3,6 +3,9 @@ import numpy as np
 import time
 from time import sleep
 import argparse
+import tkinter as tk
+import time
+import os
 
 from environment import Environment, Parking1
 from pathplanning import PathPlanning, ParkPathPlanning, interpolate_path
@@ -13,7 +16,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--x_start', type=int, default=0, help='X of start')
     parser.add_argument('--y_start', type=int, default=90, help='Y of start')
-    parser.add_argument('--psi_start', type=int, default=0, help='psi of start')
+    parser.add_argument('--psi_start', type=int, default=90, help='psi of start')
     parser.add_argument('--x_end', type=int, default=90, help='X of end')
     parser.add_argument('--y_end', type=int, default=80, help='Y of end')
     parser.add_argument('--parking', type=int, default=1, help='park position in parking1 out of 24')
@@ -27,27 +30,18 @@ if __name__ == '__main__':
     end   = np.array([args.x_end, args.y_end])
     #############################################################################################
 
-    # environment margin  : 5
-    # pathplanning margin : 5
 
     ########################## defining obstacles ###############################################
     parking1 = Parking1(args.parking)
+    Y=[52, 8] 
+    L=[100,300,300,300,300,300,300,30]
+    resultat_liste, _ = parking1.Modf(Y, L)
+    ends = resultat_liste
     end, obs = parking1.generate_obstacles()
 
-    # add squares
-    # square1 = make_square(10,65,20)
-    # square2 = make_square(15,30,20)
-    # square3 = make_square(50,50,10)
-    # obs = np.vstack([obs,square1,square2,square3])
-
     # Rahneshan logo
-    start = np.array([50,95])
-    end = np.array([35,20])
-    # rah = np.flip(cv2.imread('READ_ME/rahneshan_obstacle.png',0), axis=0)
-    # obs = np.vstack([np.where(rah<100)[1],np.where(rah<100)[0]]).T
-
-    # new_obs = np.array([[78,78],[79,79],[78,79]])
-    # obs = np.vstack([obs,new_obs])
+    start = np.array([14,10])
+    end = np.array([20,70])
     #############################################################################################
 
     ########################### initialization ##################################################
@@ -63,26 +57,56 @@ if __name__ == '__main__':
     #############################################################################################
 
     ############################# path planning #################################################
+
     park_path_planner = ParkPathPlanning(obs)
     path_planner = PathPlanning(obs)
 
     print('planning park scenario ...')
-    new_end, park_path, ensure_path1, ensure_path2 = park_path_planner.generate_park_scenario(int(start[0]),int(start[1]),int(end[0]),int(end[1]))
     
     print('routing to destination ...')
-    path = path_planner.plan_path(int(start[0]),int(start[1]),int(new_end[0]),int(new_end[1]))
-    path = np.vstack([path, ensure_path1])
+    path=[0,0]
+    
+    for end in  ends:
+    # Faites quelque chose ici
+            path = path_planner.plan_path(int(start[0]),int(start[1]),int(end[0]),int(end[1]))
+            if len(path) != 1:
+                break
+    # Vérifiez la condition
+
+    
+    
+    for end in  ends:
+        distance = path_planner.plan_path(int(start[0]),int(start[1]),int(end[0]),int(end[1]))
+        if len(distance) < len(path) and len(distance) != 1:
+            path = distance
+    if len(path) == 1:
+         # Création de la fenêtre graphique
+        window = tk.Tk()
+        window.title("Attente")
+        window.geometry("800x600")
+        window.configure(bg="white")
+
+        # Création du label avec le message en rouge
+        label = tk.Label(window, text="Attendez 10 secondes, les couloirs sont pleins", fg="red", bg="white", font=("Arial", 24))
+        label.pack(pady=200)
+
+        # Attente de 10 secondes
+        time.sleep(10)
+
+        # Recompile automatiquement le code
+        os.system("python nom_du_fichier.py")
+
+        # Boucle principale de la fenêtre graphique
+        window.mainloop()
+        
+    path = np.vstack([path])  
+        
 
     print('interpolating ...')
     interpolated_path = interpolate_path(path, sample_rate=5)
-    interpolated_park_path = interpolate_path(park_path, sample_rate=2)
-    interpolated_park_path = np.vstack([ensure_path1[::-1], interpolated_park_path, ensure_path2[::-1]])
-
     env.draw_path(interpolated_path)
-    env.draw_path(interpolated_park_path)
-
-    final_path = np.vstack([interpolated_path, interpolated_park_path, ensure_path2])
-
+    final_path = np.vstack([interpolated_path])
+    
     #############################################################################################
 
     ################################## control ##################################################
@@ -104,6 +128,6 @@ if __name__ == '__main__':
     cv2.imshow('environment', res)
     key = cv2.waitKey()
     #############################################################################################
-
+    
     cv2.destroyAllWindows()
 
